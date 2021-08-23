@@ -1,0 +1,20 @@
+syntax = "proto3";
+option go_package="./hashService";
+package hashService;
+
+service HashService {
+  rpc GetHash (ListOfStrings) returns (ListOfHashes) {}
+}
+
+message ListOfStrings {
+  repeated string Strings = 1;
+}
+
+message Hash {
+  string Str = 1;
+  string Hash = 2;
+}
+
+message ListOfHashes {
+  repeated Hash Data = 1;
+}
