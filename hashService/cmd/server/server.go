@@ -1,14 +1,18 @@
 package main
 
 import (
+	"fmt"
 	"google.golang.org/grpc"
 	"hashService/internal/handlers"
+	"hashService/pkg/configs"
 	"hashService/pkg/hashService"
 	"net"
 )
 
 func main() {
-	lis, err := net.Listen("tcp", ":3001")
+	configs.InitConfig()
+
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", configs.Get("HASH_SERVICE_PORT")))
 	if err != nil {
 		panic(err)
 	}
@@ -20,5 +24,4 @@ func main() {
 	if err := s.Serve(lis); err != nil {
 		panic(err)
 	}
-
 }

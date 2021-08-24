@@ -4,13 +4,17 @@ import (
 	"context"
 	"fmt"
 	"google.golang.org/grpc"
+	"hashServer/pkg/configs"
 	"hashServer/pkg/hashService"
 	"time"
 )
 
 func main() {
+	configs.InitConfig()
+
 	cwt, _ := context.WithTimeout(context.Background(), time.Second*5)
-	conn, err := grpc.DialContext(cwt, "localhost:3001", grpc.WithInsecure(), grpc.WithBlock())
+	conn, err := grpc.DialContext(cwt, fmt.Sprintf(":%s", configs.Get("HASH_SERVICE_PORT")),
+		grpc.WithInsecure(), grpc.WithBlock())
 
 	if err != nil {
 		panic(err)
