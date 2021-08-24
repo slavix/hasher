@@ -20,7 +20,7 @@ func main() {
 	hash := hashService.NewHashServiceClient(conn)
 
 	stringData := &hashService.ListOfStrings{
-		Strings: []string{"ddd", "sss"},
+		Strings: []string{"ddd", "ddd", "sss", "sdsfsd", "wewewe"},
 	}
 
 	hashResult, err := hash.GetHash(cwt, stringData)
