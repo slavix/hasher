@@ -1,6 +1,19 @@
 version: '3.3'
 
 services:
+  pgdb:
+    image: "postgres:11"
+    container_name: "pgdb"
+    environment:
+      - POSTGRES_USER=db_user
+      - POSTGRES_PASSWORD=pwd123
+    networks:
+      - common-net
+    ports:
+      - "54320:5432"
+    volumes:
+      - /home/slavix/rebrain/db/data:/var/lib/postgresql/data
+
   consul-agent-1: &consul-agent
     image: consul:latest
     networks:
