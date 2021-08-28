@@ -1,6 +1,6 @@
 
 run:
-	@go run ./cmd/app/server/server.go
+	@go run ./cmd/server/server.go
 
 test:
 	@go test ./internal/handlers -cover

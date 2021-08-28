@@ -4,6 +4,7 @@ package restapi
 
 import (
 	"crypto/tls"
+	"hashServer/internal/handler"
 	"net/http"
 
 	"github.com/go-openapi/errors"
@@ -42,11 +43,8 @@ func configureAPI(api *operations.HashServerAPI) http.Handler {
 			return middleware.NotImplemented("operation operations.GetCheck has not yet been implemented")
 		})
 	}
-	if api.PostSendHandler == nil {
-		api.PostSendHandler = operations.PostSendHandlerFunc(func(params operations.PostSendParams) middleware.Responder {
-			return middleware.NotImplemented("operation operations.PostSend has not yet been implemented")
-		})
-	}
+
+	api.PostSendHandler = operations.PostSendHandlerFunc(handler.Mux.SaveHashesFromString)
 
 	api.PreServerShutdown = func() {}
 
