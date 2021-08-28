@@ -15,6 +15,8 @@ require (
 	github.com/go-openapi/validate v0.20.2
 	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/jessevdk/go-flags v1.5.0
+	github.com/jmoiron/sqlx v1.3.4 // indirect
+	github.com/lib/pq v1.10.2 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/spf13/viper v1.8.1
 	go.mongodb.org/mongo-driver v1.7.1 // indirect

@@ -2,17 +2,20 @@ package main
 
 import (
 	"fmt"
+	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 	"hashService/internal/handlers"
-	"hashService/pkg/configs"
 	"hashService/pkg/hashService"
+	"log"
 	"net"
 )
 
 func main() {
-	configs.InitConfig()
+	if err := initConfig(); err != nil {
+		log.Fatalf("error initializing configs: %s", err.Error())
+	}
 
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", configs.Get("HASH_SERVICE_PORT")))
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", viper.GetString("port")))
 	if err != nil {
 		panic(err)
 	}
@@ -24,4 +27,10 @@ func main() {
 	if err := s.Serve(lis); err != nil {
 		panic(err)
 	}
+}
+
+func initConfig() error {
+	viper.AddConfigPath("configs")
+	viper.SetConfigName("config")
+	return viper.ReadInConfig()
 }
