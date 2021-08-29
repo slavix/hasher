@@ -3,8 +3,10 @@ package handlers
 import (
 	"context"
 	"encoding/hex"
+	"fmt"
 	"golang.org/x/crypto/sha3"
 	"hashService/pkg/hashService"
+	"hashService/pkg/logger"
 	"sync"
 )
 
@@ -35,6 +37,9 @@ func (s *Server) GetHash(ctx context.Context, in *hashService.ListOfStrings) (*h
 	}
 
 	wg.Wait()
+
+	logger.Debug(ctx, "handlers", "GetHash", "new hash was generated",
+		fmt.Sprintf("strings - %s, hashes - %s", in.Strings, hashes))
 
 	return &hashService.ListOfHashes{
 		Data: hashes,

@@ -3,11 +3,15 @@ package main
 import (
 	"context"
 	"fmt"
+	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	grpc_logrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 	"hashService/internal/handlers"
+	"hashService/internal/interceptors"
 	"hashService/pkg/hashService"
-	"log"
+	"hashService/pkg/logger"
 	"net"
 	"os"
 	"os/signal"
@@ -16,20 +20,26 @@ import (
 )
 
 func main() {
+	logrusLogger := logger.Init("grpc-hash-service", 5)
+
 	if err := initConfig(); err != nil {
-		log.Fatalf("error initializing configs: %s", err.Error())
+		logger.Panic("main", "main", err, "error initializing configs")
+		panic(err)
 	}
 
 	netListener, err := net.Listen("tcp", fmt.Sprintf(":%s", viper.GetString("port")))
 	if err != nil {
+		logger.Panic("main", "main", err, "net listener fail")
 		panic(err)
 	}
 
-	s := grpc.NewServer()
+	s := grpc.NewServer(grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(
+		grpc_logrus.UnaryServerInterceptor(logrus.NewEntry(logrusLogger)), interceptors.ContextRequestInterceptor())))
 	server := &handlers.Server{}
 
 	hashService.RegisterHashServiceServer(s, server)
 	if err := s.Serve(netListener); err != nil {
+		logger.Panic("main", "main", err, "grpc server fail")
 		panic(err)
 	}
 
@@ -39,6 +49,7 @@ func main() {
 	<-c
 
 	if err := shutdown(s, netListener); err != nil {
+		logger.Panic("main", "main", err, "shutdown failed")
 		panic(err)
 	}
 }
@@ -50,10 +61,10 @@ func shutdown(grpcServer *grpc.Server, netListener net.Listener) error {
 	grpcServer.Stop()
 
 	if err := netListener.Close(); err != nil {
-		log.Println("main", "shutdown", err, "grps netlistener doesn't close connection")
+		logger.Panic("main", "shutdown", err, "grps netlistener doesn't close connection")
 	}
 
-	log.Println(ctx, "main", "shutdown", "shutdown success", "")
+	logger.Info(ctx, "main", "shutdown", "shutdown success", "")
 
 	return nil
 }
