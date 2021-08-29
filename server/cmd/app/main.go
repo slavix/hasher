@@ -1,8 +1,10 @@
 package main
 
 import (
+	"context"
 	"github.com/go-openapi/loads"
 	"github.com/jessevdk/go-flags"
+	"github.com/jmoiron/sqlx"
 	"github.com/pressly/goose"
 	"github.com/spf13/viper"
 	"hashServer/internal/generated/restapi"
@@ -11,6 +13,9 @@ import (
 	"hashServer/internal/repository"
 	"log"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 )
 
 func main() {
@@ -18,6 +23,7 @@ func main() {
 		log.Fatalf("error initializing configs: %s", err.Error())
 	}
 
+	// database
 	db, err := repository.NewPostgresDB(repository.Config{
 		Host: viper.GetString("db.host"),
 		Port: viper.GetString("db.port"),
@@ -37,9 +43,11 @@ func main() {
 		log.Fatalf("migrations failed: %s", err.Error())
 	}
 
+	//configure services
 	repos := repository.NewRepository(db)
 	handler.InitHandler(repos)
 
+	//swagger server
 	swaggerSpec, err := loads.Embedded(restapi.SwaggerJSON, restapi.FlatSwaggerJSON)
 	if err != nil {
 		log.Fatalln(err)
@@ -48,7 +56,6 @@ func main() {
 	api := operations.NewHashServerAPI(swaggerSpec)
 	server := restapi.NewServer(api)
 	server.Port = viper.GetInt("port")
-	defer server.Shutdown()
 
 	parser := flags.NewParser(server, flags.Default)
 	parser.ShortDescription = "hash_server"
@@ -77,6 +84,32 @@ func main() {
 		log.Fatalln(err)
 	}
 
+	//shutdown
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
+
+	<-c
+
+	if err := shutdown(db, server); err != nil {
+		panic(err)
+	}
+}
+
+func shutdown(db *sqlx.DB, server *restapi.Server) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := db.Close(); err != nil {
+		log.Println("main", "shutdown", err, "db doesn't close connection")
+	}
+
+	if err := server.Shutdown(); err != nil {
+		log.Println("main", "shutdown", err, "swagger server doesn't close connection")
+	}
+
+	log.Println(ctx, "main", "shutdown", "shutdown success", "")
+
+	return nil
 }
 
 func initConfig() error {
