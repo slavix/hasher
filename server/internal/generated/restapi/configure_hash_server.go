@@ -9,8 +9,6 @@ import (
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
-	"github.com/go-openapi/runtime/middleware"
-
 	"hashServer/internal/generated/restapi/operations"
 )
 
@@ -38,11 +36,7 @@ func configureAPI(api *operations.HashServerAPI) http.Handler {
 
 	api.JSONProducer = runtime.JSONProducer()
 
-	if api.GetCheckHandler == nil {
-		api.GetCheckHandler = operations.GetCheckHandlerFunc(func(params operations.GetCheckParams) middleware.Responder {
-			return middleware.NotImplemented("operation operations.GetCheck has not yet been implemented")
-		})
-	}
+	api.GetCheckHandler = operations.GetCheckHandlerFunc(handler.Mux.GetHashesByIds)
 
 	api.PostSendHandler = operations.PostSendHandlerFunc(handler.Mux.SaveHashesFromString)
 

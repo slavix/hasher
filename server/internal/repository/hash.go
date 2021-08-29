@@ -1,8 +1,12 @@
 package repository
 
 import (
+	"errors"
 	"fmt"
 	"github.com/jmoiron/sqlx"
+	"hashServer/internal/generated/models"
+	"strconv"
+	"strings"
 )
 
 type Hash struct {
@@ -24,4 +28,20 @@ func (h *Hash) Create(hash string) (int, error) {
 	}
 
 	return itemId, nil
+}
+
+func (h *Hash) GetByIds(ids []string) (models.ArrayOfHash, error) {
+	var hashes models.ArrayOfHash
+
+	for _, v := range ids {
+		if _, err := strconv.Atoi(v); err != nil {
+			return hashes, errors.New("id must be a number")
+		}
+	}
+
+	query := fmt.Sprintf("SELECT id, hash FROM %s WHERE id IN (%s)", hashesTable, strings.Join(ids, ","))
+
+	err := h.db.Select(&hashes, query)
+
+	return hashes, err
 }

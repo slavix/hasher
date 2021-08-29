@@ -62,3 +62,13 @@ func (h *Handler) SaveHashesFromString(params operations.PostSendParams) middlew
 
 	return operations.NewPostSendOK().WithPayload(result)
 }
+
+func (h *Handler) GetHashesByIds(params operations.GetCheckParams) middleware.Responder {
+	result, err := h.repository.Hash.GetByIds(params.Ids)
+	if err != nil {
+		log.Printf("insert id failed: %s", err.Error())
+		return operations.NewGetCheckInternalServerError()
+	}
+
+	return operations.NewGetCheckOK().WithPayload(result)
+}
