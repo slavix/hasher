@@ -1,0 +1,83 @@
+version: '3.3'
+
+services:
+  pgdb:
+    image: "postgres:11"
+    container_name: "pgdb"
+    environment:
+      - POSTGRES_USER=db_user
+      - POSTGRES_PASSWORD=pwd123
+    networks:
+      - common-net
+    ports:
+      - "54320:5432"
+    volumes:
+      - /home/slavix/rebrain/db/data:/var/lib/postgresql/data
+
+  mongo:
+    image: mongo:3
+    networks:
+      - common-net
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.8.10
+    environment:
+      - http.host=0.0.0.0
+      - transport.host=localhost
+      - network.host=0.0.0.0
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+    networks:
+      - common-net
+
+  graylog:
+    image: graylog/graylog:3.3
+    environment:
+      - GRAYLOG_PASSWORD_SECRET=somepasswordpepper
+      - GRAYLOG_ROOT_PASSWORD_SHA2=8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918
+      - GRAYLOG_HTTP_EXTERNAL_URI=http://127.0.0.1:9000/
+    networks:
+      - common-net
+    depends_on:
+      - mongo
+      - elasticsearch
+    ports:
+      # Graylog web interface and REST API
+      - 9000:9000
+      # Syslog TCP
+      - 1514:1514
+      # Syslog UDP
+      - 1514:1514/udp
+      # GELF TCP
+      - 12201:12201
+      # GELF UDP
+      - 12201:12201/udp
+
+  hashservice:
+    build: ./hashService
+    networks:
+      - common-net
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./hashService:/app
+
+  server:
+    build: ./server
+    entrypoint: /usr/bin/server
+    networks:
+      - common-net
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./server:/app
+
+networks:
+  common-net:
