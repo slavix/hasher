@@ -60,5 +60,24 @@ services:
       # GELF UDP
       - 12201:12201/udp
 
+  hashservice:
+    build: ./hashService
+    networks:
+      - common-net
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./hashService:/app
+
+  server:
+    build: ./server
+    entrypoint: /usr/bin/server
+    networks:
+      - common-net
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./server:/app
+
 networks:
   common-net:

@@ -31,7 +31,7 @@ func Panic(packageName string, funcName string, err error, msg string) {
 	logger.WithFields(logrus.Fields{
 		"package":  packageName,
 		"function": funcName,
-		"error":    err,
+		"error":    err.Error(),
 		"trace":    trace,
 	}).Panic(msg)
 }
@@ -42,7 +42,7 @@ func Error(ctx context.Context, packageName string, funcName string, err error, 
 		"requestID": GetRequestID(ctx),
 		"package":   packageName,
 		"function":  funcName,
-		"error":     err,
+		"error":     err.Error(),
 		"trace":     trace,
 	}).Error(msg)
 }
@@ -53,7 +53,7 @@ func Warn(ctx context.Context, packageName string, funcName string, err error, m
 		"requestID": GetRequestID(ctx),
 		"package":   packageName,
 		"function":  funcName,
-		"error":     err,
+		"error":     err.Error(),
 		"trace":     trace,
 	}).Warn(msg)
 }
