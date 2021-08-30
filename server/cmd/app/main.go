@@ -122,7 +122,7 @@ func shutdown(db *sqlx.DB, server *restapi.Server) error {
 }
 
 func initConfig() error {
-	viper.AddConfigPath("configs")
+	viper.AddConfigPath("/app/configs")
 	viper.SetConfigName("config")
 	return viper.ReadInConfig()
 }

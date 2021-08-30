@@ -10,7 +10,7 @@ services:
     networks:
       - common-net
     ports:
-      - "54320:5432"
+      - "5432:5432"
     volumes:
       - /home/slavix/rebrain/db/data:/var/lib/postgresql/data
 
@@ -76,6 +76,8 @@ services:
       - common-net
     ports:
       - "3000:3000"
+    depends_on:
+      - pgdb
     volumes:
       - ./server:/app
 

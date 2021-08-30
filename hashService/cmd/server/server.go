@@ -70,7 +70,7 @@ func shutdown(grpcServer *grpc.Server, netListener net.Listener) error {
 }
 
 func initConfig() error {
-	viper.AddConfigPath("configs")
+	viper.AddConfigPath("/app/configs")
 	viper.SetConfigName("config")
 	return viper.ReadInConfig()
 }
