@@ -3,8 +3,11 @@
 package restapi
 
 import (
+	"context"
 	"crypto/tls"
+	guid "github.com/satori/go.uuid"
 	"hashServer/internal/handler"
+	"hashServer/pkg/logger"
 	"net/http"
 
 	"github.com/go-openapi/errors"
@@ -26,7 +29,7 @@ func configureAPI(api *operations.HashServerAPI) http.Handler {
 	// Expected interface func(string, ...interface{})
 	//
 	// Example:
-	// api.Logger = log.Printf
+	api.Logger = logger.LogHandler
 
 	api.UseSwaggerUI()
 	// To continue using redoc as your UI, uncomment the following line
@@ -62,7 +65,18 @@ func configureServer(s *http.Server, scheme, addr string) {
 // The middleware configuration is for the handler executors. These do not apply to the swagger.json document.
 // The middleware executes after routing but before authentication, binding and validation.
 func setupMiddlewares(handler http.Handler) http.Handler {
-	return handler
+	ourFunc := func(w http.ResponseWriter, r *http.Request) {
+		requestId, ok := r.Context().Value("requestID").(string)
+		if !ok || requestId == "" {
+			uuid := guid.Must(guid.NewV4(), nil)
+			requestId = uuid.String()
+		}
+
+		r.WithContext(context.WithValue(r.Context(), "requestID", requestId))
+
+		handler.ServeHTTP(w, r)
+	}
+	return http.HandlerFunc(ourFunc)
 }
 
 // The middleware configuration happens before anything, this middleware also applies to serving the swagger.json document.

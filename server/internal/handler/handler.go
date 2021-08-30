@@ -10,7 +10,7 @@ import (
 	"hashServer/internal/generated/restapi/operations"
 	"hashServer/internal/repository"
 	"hashServer/pkg/hashService"
-	"log"
+	"hashServer/pkg/logger"
 	"time"
 )
 
@@ -34,7 +34,7 @@ func (h *Handler) SaveHashesFromString(params operations.PostSendParams) middlew
 		grpc.WithInsecure(), grpc.WithBlock())
 
 	if err != nil {
-		log.Fatalf("grpc connection failed: %s", err.Error())
+		logger.Error(context.Background(), "SaveHashesFromString", "handler", err, "grpc connection failed")
 	}
 	defer conn.Close()
 
@@ -44,7 +44,7 @@ func (h *Handler) SaveHashesFromString(params operations.PostSendParams) middlew
 		Strings: params.Params,
 	})
 	if err != nil {
-		log.Fatalf("grpc result failed: %s", err.Error())
+		logger.Error(context.Background(), "SaveHashesFromString", "handler", err, "grpc result failed")
 	}
 
 	result := models.ArrayOfHash{}
@@ -52,7 +52,7 @@ func (h *Handler) SaveHashesFromString(params operations.PostSendParams) middlew
 	for _, item := range hashResult.Data {
 		itemId, err := h.repository.Hash.Create(item.Hash)
 		if err != nil {
-			log.Fatalf("insert id failed: %s", err.Error())
+			logger.Error(context.Background(), "SaveHashesFromString", "handler", err, "insert id failed")
 		}
 
 		id := int64(itemId)
@@ -65,8 +65,10 @@ func (h *Handler) SaveHashesFromString(params operations.PostSendParams) middlew
 
 func (h *Handler) GetHashesByIds(params operations.GetCheckParams) middleware.Responder {
 	result, err := h.repository.Hash.GetByIds(params.Ids)
+
 	if err != nil {
-		log.Printf("insert id failed: %s", err.Error())
+		logger.Error(context.Background(), "GetHashesByIds", "handler", err,
+			fmt.Sprintf("failed get hash by id - %s", params.Ids))
 		return operations.NewGetCheckInternalServerError()
 	}
 

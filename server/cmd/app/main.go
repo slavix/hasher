@@ -11,6 +11,7 @@ import (
 	"hashServer/internal/generated/restapi/operations"
 	"hashServer/internal/handler"
 	"hashServer/internal/repository"
+	"hashServer/pkg/logger"
 	"log"
 	"os"
 	"os/signal"
@@ -19,8 +20,11 @@ import (
 )
 
 func main() {
+	_ = logger.Init("swagger-hash-server", 5)
+
 	if err := initConfig(); err != nil {
-		log.Fatalf("error initializing configs: %s", err.Error())
+		logger.Panic("main", "main", err, "error initializing configs")
+		panic(err)
 	}
 
 	// database
@@ -35,12 +39,14 @@ func main() {
 		SSLMode:  viper.GetString("db.sslmode"),
 	})
 	if err != nil {
-		log.Fatalf("failed to initialize db: %s", err.Error())
+		logger.Panic("main", "main", err, "failed to initialize db")
+		panic(err)
 	}
 
 	err = goose.Up(db.DB, "./internal/migrations")
 	if err != nil {
-		log.Fatalf("migrations failed: %s", err.Error())
+		logger.Panic("main", "main", err, "migrations failed")
+		panic(err)
 	}
 
 	//configure services
@@ -50,7 +56,8 @@ func main() {
 	//swagger server
 	swaggerSpec, err := loads.Embedded(restapi.SwaggerJSON, restapi.FlatSwaggerJSON)
 	if err != nil {
-		log.Fatalln(err)
+		logger.Panic("main", "main", err, "swagger loader failed")
+		panic(err)
 	}
 
 	api := operations.NewHashServerAPI(swaggerSpec)
@@ -81,7 +88,8 @@ func main() {
 	server.ConfigureAPI()
 
 	if err := server.Serve(); err != nil {
-		log.Fatalln(err)
+		logger.Panic("main", "main", err, "swagger server failed")
+		panic(err)
 	}
 
 	//shutdown
@@ -91,6 +99,7 @@ func main() {
 	<-c
 
 	if err := shutdown(db, server); err != nil {
+		logger.Panic("main", "main", err, "shutdown failed")
 		panic(err)
 	}
 }
@@ -100,14 +109,14 @@ func shutdown(db *sqlx.DB, server *restapi.Server) error {
 	defer cancel()
 
 	if err := db.Close(); err != nil {
-		log.Println("main", "shutdown", err, "db doesn't close connection")
+		logger.Panic("main", "shutdown", err, "db doesn't close connection")
 	}
 
 	if err := server.Shutdown(); err != nil {
-		log.Println("main", "shutdown", err, "swagger server doesn't close connection")
+		logger.Panic("main", "shutdown", err, "swagger server doesn't close connection")
 	}
 
-	log.Println(ctx, "main", "shutdown", "shutdown success", "")
+	logger.Info(ctx, "main", "shutdown", "shutdown success", "")
 
 	return nil
 }
