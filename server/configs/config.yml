@@ -3,6 +3,6 @@ hash_service_port: "3001"
 
 db:
     host: "localhost"
-    port: "54320"
+    port: "5432"
     dbname: "postgres"
     sslmode: "disable"
