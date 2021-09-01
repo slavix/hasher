@@ -5,7 +5,6 @@ import (
 	"fmt"
 	formatter "github.com/fabienm/go-logrus-formatters"
 	graylog "github.com/gemnasium/logrus-graylog-hook/v3"
-	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
@@ -27,34 +26,28 @@ func Init(serviceName string, level logrus.Level) *logrus.Logger {
 }
 
 func Panic(packageName string, funcName string, err error, msg string) {
-	trace := errors.WithStack(err)
 	logger.WithFields(logrus.Fields{
 		"package":  packageName,
 		"function": funcName,
 		"error":    err.Error(),
-		"trace":    trace,
 	}).Panic(msg)
 }
 
 func Error(ctx context.Context, packageName string, funcName string, err error, msg string) {
-	trace := errors.WithStack(err)
 	logger.WithFields(logrus.Fields{
 		"requestID": GetRequestID(ctx),
 		"package":   packageName,
 		"function":  funcName,
 		"error":     err.Error(),
-		"trace":     trace,
 	}).Error(msg)
 }
 
 func Warn(ctx context.Context, packageName string, funcName string, err error, msg string) {
-	trace := errors.WithStack(err)
 	logger.WithFields(logrus.Fields{
 		"requestID": GetRequestID(ctx),
 		"package":   packageName,
 		"function":  funcName,
 		"error":     err.Error(),
-		"trace":     trace,
 	}).Warn(msg)
 }
 

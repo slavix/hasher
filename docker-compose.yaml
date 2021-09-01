@@ -3,7 +3,6 @@ version: '3.3'
 services:
   pgdb:
     image: "postgres:11"
-    container_name: "pgdb"
     environment:
       - POSTGRES_USER=db_user
       - POSTGRES_PASSWORD=pwd123
@@ -78,6 +77,11 @@ services:
       - "3000:3000"
     depends_on:
       - pgdb
+    environment:
+      - APP_HOST=server
+      - POSTGRES_HOST=pgdb
+      - POSTGRES_USER=db_user
+      - POSTGRES_PASSWORD=pwd123
     volumes:
       - ./server:/app
 

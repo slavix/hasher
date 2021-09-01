@@ -29,12 +29,10 @@ func main() {
 
 	// database
 	db, err := repository.NewPostgresDB(repository.Config{
-		Host: viper.GetString("db.host"),
-		Port: viper.GetString("db.port"),
-		//Username: os.Getenv("POSTGRES_USER"),
-		Username: "db_user",
-		//Password: os.Getenv("POSTGRES_PASSWORD"),
-		Password: "pwd123",
+		Host:     os.Getenv("POSTGRES_HOST"),
+		Port:     viper.GetString("db.port"),
+		Username: os.Getenv("POSTGRES_USER"),
+		Password: os.Getenv("POSTGRES_PASSWORD"),
 		DBName:   viper.GetString("db.dbname"),
 		SSLMode:  viper.GetString("db.sslmode"),
 	})
@@ -43,7 +41,7 @@ func main() {
 		panic(err)
 	}
 
-	err = goose.Up(db.DB, "./internal/migrations")
+	err = goose.Up(db.DB, "/app/internal/migrations")
 	if err != nil {
 		logger.Panic("main", "main", err, "migrations failed")
 		panic(err)
@@ -62,6 +60,7 @@ func main() {
 
 	api := operations.NewHashServerAPI(swaggerSpec)
 	server := restapi.NewServer(api)
+	server.Host = os.Getenv("APP_HOST")
 	server.Port = viper.GetInt("port")
 
 	parser := flags.NewParser(server, flags.Default)
