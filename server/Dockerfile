@@ -7,5 +7,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o server /app/cmd/app/main.g
 
 FROM scratch
 COPY --from=builder /app/configs /app/configs
+COPY --from=builder /app/internal/migrations /app/internal/migrations
 COPY --from=builder /app/server /usr/bin/server
+
 ENTRYPOINT [ "/usr/bin/server" ]

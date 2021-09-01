@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/stretchr/testify/require"
 	"hashService/pkg/hashService"
+	"hashService/pkg/logger"
 	"testing"
 )
 
@@ -18,6 +19,7 @@ var testStrings = &hashService.ListOfStrings{
 }
 
 func TestFalseOnExistKey(t *testing.T) {
+	logger.Init("grpc-hash-service", 5)
 	req := require.New(t)
 
 	tests := map[string]struct {
