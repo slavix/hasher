@@ -20,11 +20,10 @@ import (
 )
 
 func main() {
-	_ = logger.Init("swagger-hash-server", 5)
+	logger.Init("swagger-hash-server", 5)
 
 	if err := initConfig(); err != nil {
 		logger.Panic("main", "main", err, "error initializing configs")
-		panic(err)
 	}
 
 	// database
@@ -38,13 +37,11 @@ func main() {
 	})
 	if err != nil {
 		logger.Panic("main", "main", err, "failed to initialize db")
-		panic(err)
 	}
 
 	err = goose.Up(db.DB, "/app/internal/migrations")
 	if err != nil {
 		logger.Panic("main", "main", err, "migrations failed")
-		panic(err)
 	}
 
 	//configure services
@@ -55,7 +52,6 @@ func main() {
 	swaggerSpec, err := loads.Embedded(restapi.SwaggerJSON, restapi.FlatSwaggerJSON)
 	if err != nil {
 		logger.Panic("main", "main", err, "swagger loader failed")
-		panic(err)
 	}
 
 	api := operations.NewHashServerAPI(swaggerSpec)
@@ -88,7 +84,6 @@ func main() {
 
 	if err := server.Serve(); err != nil {
 		logger.Panic("main", "main", err, "swagger server failed")
-		panic(err)
 	}
 
 	//shutdown
@@ -99,7 +94,6 @@ func main() {
 
 	if err := shutdown(db, server); err != nil {
 		logger.Panic("main", "main", err, "shutdown failed")
-		panic(err)
 	}
 }
 
